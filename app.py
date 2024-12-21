@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import config
+import sqlite3
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
@@ -10,17 +11,15 @@ from user import User
 class App:
     __bot: Bot
     __dp: Dispatcher
-    __handler_register: dict
 
     def __init__(self):
         logging.basicConfig(level=logging.INFO)
-        # TODO: создать конфиг и перенести все важные данные в него
         self.__bot = Bot(token=config.token)
         self.__dp = Dispatcher()
-        self.__register_handlers()
+        self.__handlers()
 
-    def __register_handlers(self):
-        # TODO: сделать нормальную регистрацию и добавление её в базу данных
+    def __handlers(self):
+        # TODO: сделать нормальную регистрацию и добавление в бд
         @self.__dp.message(Command("start"))
         async def cmd_start(message: types.Message):
             user = User(message.from_user.id)
@@ -33,11 +32,11 @@ class App:
             logging.info(f"User {user} need help from bot")
             await message.answer("Help!")
 
-        @self.__dp.message(Command("help"))
+        @self.__dp.message()
         async def echo(message: types.Message):
             user = User(message.from_user.id)
-            logging.info(f"User {user} need help from bot")
-            await message.answer("Help!")
+            logging.info(f"User {user} send echo message: {message.text}")
+            await message.answer(message.text)
 
     async def main(self):
         await self.__dp.start_polling(self.__bot)
